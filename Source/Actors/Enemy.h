@@ -35,7 +35,7 @@ public:
     DrawAnimatedComponent* GetDrawComponent() { return mDrawComponent; }
     float GetVelocidade() const { return mVelocidade; }
     void MoveTowardsPlayer();
-    
+
     // Getters para Behavior Tree
     int GetHP() const { return mHP; }
     float GetFireCooldown() const { return mFireCooldown; }
@@ -49,7 +49,7 @@ private:
 
     // O cérebro da FSM (mantido para compatibilidade)
     std::unique_ptr<State> mEstadoAtual;
-    
+
     // O cérebro da Behavior Tree
     std::shared_ptr<BehaviorTree> mBehaviorTree;
 
