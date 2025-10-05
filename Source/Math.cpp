@@ -218,6 +218,7 @@ void Matrix4::Invert()
 	}
 }
 
+
 Matrix4 Matrix4::CreateFromQuaternion(const class Quaternion& q)
 {
 	float mat[4][4];
