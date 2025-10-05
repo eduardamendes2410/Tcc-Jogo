@@ -229,6 +229,10 @@ public:
 		y /= length;
 	}
 
+	static float Distance(const Vector2& first, const Vector2& second) {
+		return (first - second).Length();
+	}
+
 	// Normalize the provided vector
 	static Vector2 Normalize(const Vector2 &vec)
 	{
@@ -254,6 +258,7 @@ public:
 	{
 		return v - 2.0f * Vector2::Dot(v, n) * n;
 	}
+
 
 	// Transform vector by matrix
 	static Vector2 Transform(const Vector2 &vec, const class Matrix3 &mat, float w = 1.0f);

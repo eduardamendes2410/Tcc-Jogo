@@ -39,7 +39,7 @@ void Spawner::OnUpdate(float deltaTime)
                 // 1 inimigo por grupo
                 if(groupNumber == 2 || groupNumber == 3) {
                     Vector2 offset = Vector2(-30.0f, 0.0f);
-                    auto enemy = new Enemy(mGame, const_cast<Punk*>(punk), 0);
+                    auto enemy = new Enemy(mGame, const_cast<Punk*>(punk), 0, AIType::BehaviorTree);
                     Vector2 spawnPos = center + offset;
                     enemy->SetPosition(spawnPos);
                     enemy->Start();
@@ -54,7 +54,7 @@ void Spawner::OnUpdate(float deltaTime)
                             case 1: offset = Vector2(0.0f, 0.0f); break;
                         }
 
-                        auto enemy = new Enemy(mGame, const_cast<Punk*>(punk), 0);
+                        auto enemy = new Enemy(mGame, const_cast<Punk*>(punk), 0, AIType::BehaviorTree);
                         Vector2 spawnPos = center + offset;
                         enemy->SetPosition(spawnPos);
                         enemy->Start();
@@ -72,7 +72,7 @@ void Spawner::OnUpdate(float deltaTime)
                             case 2: offset = Vector2(30.0f, 0.0f); break;
                         }
 
-                        auto enemy = new Enemy(mGame, const_cast<Punk*>(punk), 0);
+                        auto enemy = new Enemy(mGame, const_cast<Punk*>(punk), 0, AIType::BehaviorTree);
                         Vector2 spawnPos = center + offset;
                         enemy->SetPosition(spawnPos);
                         enemy->Start();
@@ -103,7 +103,7 @@ void Spawner::OnUpdate(float deltaTime)
                         case 2: offset = Vector2(40.0f, 20.0f);   break;
                     }
 
-                    auto enemy = new Enemy(mGame, const_cast<Punk*>(punk), 1);
+                    auto enemy = new Enemy(mGame, const_cast<Punk*>(punk), 1, AIType::BehaviorTree);
                     Vector2 spawnPos = center + offset;
                     enemy->SetPosition(spawnPos);
                     enemy->Start();
