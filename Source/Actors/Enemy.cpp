@@ -12,6 +12,8 @@
 #include "Punk.h"
 #include "../Components/RigidBodyComponent.h"
 #include "FSM/State.h"
+#include "BehaviorTree/EnemyBehaviorTree.h"
+#include "BehaviorTree/EnemyABehaviorTree.h"
 #include "../Components/DrawComponents/DrawAnimatedComponent.h"
 #include "../Components/ColliderComponents/AABBColliderComponent.h"
 #include "FSM/Patrol.h"
@@ -27,9 +29,11 @@ Enemy::Enemy(Game* game, Punk* punk, int type)
     , mVelocidade(75.0f) // Velocidade um pouco menor que a do player
     , mIsDying(false)
     , mDeathTimer(0.0f)
-    ,mType(type)
-    ,mMaxHP(3)
-   ,mHP(3)
+    , mType(type)
+    , mMaxHP(3)
+    , mHP(3)
+    , mIsShooting(false)
+    , mFireCooldown(0.0f)
 
 {
     // Configura os componentes, assim como no Punk
@@ -78,9 +82,18 @@ Enemy::Enemy(Game* game, Punk* punk, int type)
     mDrawHudLife = new DrawRectangleComponent(mHudBase, Vector2(barWidth, barHeight), Vector3(1.0f, 0.0f, 0.0f), 201);
 
 
-    // --- A INICIALIZAÇÃO DA FSM ACONTECE AQUI! ---
-    // O inimigo começa no estado "Patrulhando"
-    mEstadoAtual = std::make_unique<Patrol>();
+    // --- INICIALIZAÇÃO BASEADA NO TIPO DE INIMIGO ---
+    if (mType == 0) {
+        // Inimigo A: Usa Behavior Tree inteligente e complexa
+        mBehaviorTree = EnemyABehaviorTree::CreateMultiStrategyBehaviorTree();
+        // Inicializa FSM como fallback (não será usada)
+        mEstadoAtual = std::make_unique<Patrol>();
+    } else {
+        // Inimigo B: Usa FSM tradicional
+        mEstadoAtual = std::make_unique<Patrol>();
+        // Behavior Tree não é criada para economizar memória
+        mBehaviorTree = nullptr;
+    }
 
 }
 
@@ -123,8 +136,17 @@ void Enemy::OnUpdate(float deltaTime)
         return;
     }
 
-    if (mEstadoAtual) {
-        mEstadoAtual->Update(this, deltaTime);
+    // Usar Behavior Tree para Inimigo A (tipo 0) e FSM para Inimigo B (tipo 1)
+    if (mType == 0) {
+        // Inimigo A: Usa Behavior Tree
+        if (mBehaviorTree && mPunk) {
+            mBehaviorTree->Update(this, deltaTime);
+        }
+    } else {
+        // Inimigo B: Usa FSM tradicional
+        if (mEstadoAtual && mPunk) {
+            mEstadoAtual->Update(this, deltaTime);
+        }
     }
 
     if (!mIsDying) {
