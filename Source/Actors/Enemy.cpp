@@ -12,29 +12,28 @@
 #include "Punk.h"
 #include "../Components/RigidBodyComponent.h"
 #include "FSM/State.h"
+#include "BehaviorTree/EnemyBehaviorTree.h"
+#include "BehaviorTree/EnemyABehaviorTree.h"
 #include "../Components/DrawComponents/DrawAnimatedComponent.h"
 #include "../Components/ColliderComponents/AABBColliderComponent.h"
 #include "FSM/Patrol.h"
 #include "../Components/DrawComponents/DrawRectangleComponent.h"
-#include "BehaviorTree/EnemyBT.h"
-#include "BehaviorTree/Selector.h"
-#include "BehaviorTree/Sequence.h"
 
 // Inclui os estados que vamos usar
 
 const float INIMIGO_DEATH_TIME = 0.35f;
 
-Enemy::Enemy(Game* game, Punk* punk, int type, AIType aiType)
+Enemy::Enemy(Game* game, Punk* punk, int type)
     : Actor(game)
     , mPunk(punk)
-    ,mAiType(aiType)
     , mVelocidade(75.0f) // Velocidade um pouco menor que a do player
     , mIsDying(false)
     , mDeathTimer(0.0f)
-    ,mType(type)
-    ,mMaxHP(3)
-   ,mHP(3)
-    ,mTimeSinceLastSeen(999.0f)
+    , mType(type)
+    , mMaxHP(3)
+    , mHP(3)
+    , mIsShooting(false)
+    , mFireCooldown(0.0f)
 
 {
     // Configura os componentes, assim como no Punk
@@ -83,15 +82,19 @@ Enemy::Enemy(Game* game, Punk* punk, int type, AIType aiType)
     mDrawHudLife = new DrawRectangleComponent(mHudBase, Vector2(barWidth, barHeight), Vector3(1.0f, 0.0f, 0.0f), 201);
 
 
-    // --- A INICIALIZAÇÃO DA FSM ACONTECE AQUI! ---
-    // O inimigo começa no estado "Patrulhando"
-    //mEstadoAtual = std::make_unique<Patrol>(); SE DER PAU VOLTO AQUI
-
-    if (mAiType == AIType::BehaviorTree) {
-        SetupBehaviorTree();
-    } else { // AIType::FSM
-        SetupFSM();
+    // --- INICIALIZAÇÃO BASEADA NO TIPO DE INIMIGO ---
+    if (mType == 0) {
+        // Inimigo A: Usa Behavior Tree inteligente e complexa
+        mBehaviorTree = EnemyABehaviorTree::CreateMultiStrategyBehaviorTree();
+        // Inicializa FSM como fallback (não será usada)
+        mEstadoAtual = std::make_unique<Patrol>();
+    } else {
+        // Inimigo B: Usa FSM tradicional
+        mEstadoAtual = std::make_unique<Patrol>();
+        // Behavior Tree não é criada para economizar memória
+        mBehaviorTree = nullptr;
     }
+
 }
 
 Enemy::~Enemy() {
@@ -133,30 +136,18 @@ void Enemy::OnUpdate(float deltaTime)
         return;
     }
 
-
-    // --- NEW: DUAL AI EXECUTION LOGIC ---
-    if (mAiType == AIType::BehaviorTree) {
-        // If it's a BT enemy, update its variables and Tick the tree
-        mTimeSinceLastSeen += deltaTime;
-        float sightRange = 400.0f;
-        if (mPunk && Vector2::Distance(GetPosition(), mPunk->GetPosition()) < sightRange) {
-            JustSawPlayer();
-            SetLastKnownPosition(mPunk->GetPosition());
+    // Usar Behavior Tree para Inimigo A (tipo 0) e FSM para Inimigo B (tipo 1)
+    if (mType == 0) {
+        // Inimigo A: Usa Behavior Tree
+        if (mBehaviorTree && mPunk) {
+            mBehaviorTree->Update(this, deltaTime);
         }
-        if (mBehaviorTree) {
-            mBehaviorTree->Tick();
-        }
-    } else { // AIType::FSM
-        // If it's an FSM enemy, update the current state as before
-        if (mEstadoAtual) {
+    } else {
+        // Inimigo B: Usa FSM tradicional
+        if (mEstadoAtual && mPunk) {
             mEstadoAtual->Update(this, deltaTime);
         }
     }
-
-    //SE DER PAU VOLTO AQUI
-    // if (mEstadoAtual) {
-    //     mEstadoAtual->Update(this, deltaTime);
-    // }
 
     if (!mIsDying) {
         Vector2 enemyPos = GetPosition();
@@ -173,47 +164,6 @@ void Enemy::OnUpdate(float deltaTime)
     }
 }
 
-void Enemy::SetupFSM() {
-    mEstadoAtual = std::make_unique<Patrol>(150.0f); // Pass patrol distance
-    if(mEstadoAtual) {
-        mEstadoAtual->Enter(this);
-    }
-}
-
-void Enemy::SetupBehaviorTree() {
-    auto root = std::make_unique<Selector>();
-
-    // Ramo 1: Fuga
-    auto fleeSequence = std::make_unique<Sequence>();
-    fleeSequence->AddChild(std::make_unique<IsHealthLow>(this, 1.0f)); // Flee at 1 HP
-    fleeSequence->AddChild(std::make_unique<Flee>(this));
-
-    // Ramo 2: Ataque
-    auto attackSequence = std::make_unique<Sequence>();
-    attackSequence->AddChild(std::make_unique<IsPlayerInAttackRange>(this));
-    attackSequence->AddChild(std::make_unique<AttackPlayer>(this));
-
-    // Ramo 3: Perseguição
-    auto chaseSequence = std::make_unique<Sequence>();
-    chaseSequence->AddChild(std::make_unique<IsPlayerInSightRange>(this));
-    chaseSequence->AddChild(std::make_unique<ChasePlayer>(this));
-
-    // Ramo 4: Procura
-    auto searchSequence = std::make_unique<Sequence>();
-    searchSequence->AddChild(std::make_unique<HasPlayerBeenSeenRecently>(this, 5.0f));
-    searchSequence->AddChild(std::make_unique<SearchForPlayer>(this));
-
-    // Ação Padrão: Patrulha
-    auto patrolAction = std::make_unique<PatrolBT>(this, 150.0f);
-
-    root->AddChild(std::move(fleeSequence));
-    root->AddChild(std::move(attackSequence));
-    root->AddChild(std::move(chaseSequence));
-    root->AddChild(std::move(searchSequence));
-    root->AddChild(std::move(patrolAction));
-
-    mBehaviorTree = std::move(root);
-}
 
 void Enemy::TakeDamage()
 {

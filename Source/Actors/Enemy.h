@@ -9,36 +9,23 @@
 #include "Punk.h"
 #include "../Game.h"
 #include "FSM/State.h"
+#include "BehaviorTree/BehaviorTree.h"
 #include "../Components/DrawComponents/DrawRectangleComponent.h"
-#include "BehaviorTree/Node.h"
-
-enum class AIType {
-    FSM,
-    BehaviorTree
-};
 
 class Enemy: public Actor {
 public:
-    Enemy(Game* game, Punk* player, int type, AIType aiType);
+    Enemy(Game* game, Punk* player, int type);
     ~Enemy();
 
     void OnUpdate(float deltaTime) override;
     void Kill() override;
-
-    // --- Funções para a FSM ---
     void ChangeState(std::unique_ptr<State> newState);
 
     void Start();
-
-    // --- Funções para a Lógica de Dano e Estado ---
     void TakeDamage();
-    float GetHealth() const { return static_cast<float>(mHP); } // Adapta o mHP para a BT
 
-    // --- Funções de Ação ---
     void ShootAtPlayer(Vector2 targetPos, AABBColliderComponent* targetComponent); //Shooting related
-    void MoveTowardsPlayer();
 
-    // --- Funções de Colisão ---
     void OnHorizontalCollision(const float minOverlap, AABBColliderComponent* other) override;
     void OnVerticalCollision(const float minOverlap, AABBColliderComponent* other) override;
 
@@ -47,28 +34,24 @@ public:
     RigidBodyComponent* GetRigidBody() { return mRigidBodyComponent; }
     DrawAnimatedComponent* GetDrawComponent() { return mDrawComponent; }
     float GetVelocidade() const { return mVelocidade; }
+    void MoveTowardsPlayer();
 
-    // --- Funções Específicas da Behavior Tree ---
-    void SetLastKnownPosition(const Vector2& pos) { mLastKnownPosition = pos; }
-    const Vector2& GetLastKnownPosition() const { return mLastKnownPosition; }
-    void JustSawPlayer() { mTimeSinceLastSeen = 0.0f; }
-    float GetTimeSinceLastSeen() const { return mTimeSinceLastSeen; }
+    // Getters para Behavior Tree
+    int GetHP() const { return mHP; }
+    float GetFireCooldown() const { return mFireCooldown; }
+    void SetFireCooldown(float cooldown) { mFireCooldown = cooldown; }
 
 private:
-
-    // Funções de inicialização privadas
-    void SetupFSM();
-    void SetupBehaviorTree();
-
     // Ponteiros para os componentes, igual ao Punk
     RigidBodyComponent* mRigidBodyComponent;
     AABBColliderComponent* mColliderComponent;
     DrawAnimatedComponent* mDrawComponent;
 
-    // O cérebro da IA
-    AIType mAiType;
-    std::unique_ptr<State> mEstadoAtual;  // Usado APENAS se mAiType == FSM
-    std::unique_ptr<Node> mBehaviorTree;
+    // O cérebro da FSM (mantido para compatibilidade)
+    std::unique_ptr<State> mEstadoAtual;
+
+    // O cérebro da Behavior Tree
+    std::shared_ptr<BehaviorTree> mBehaviorTree;
 
     // Dados específicos do inimigo
     Punk* mPunk; // Precisa de uma referência ao player para saber quem seguir/atacar
@@ -79,17 +62,14 @@ private:
     bool mTakingDamage = false;
     float mDamageTimer = 0.0f;
     int mType;
-    bool mIsShooting; //Shooting related
-    float mFireCooldown; //Shooting related
+    bool mIsShooting = false; //Shooting related
+    float mFireCooldown = 0.0f; //Shooting related
 
     Actor* mHudBase;
     DrawRectangleComponent* mDrawHudBackground;
     DrawRectangleComponent* mDrawHudLife;
     int mMaxHP;
 
-    // --- Variáveis novas, usadas pela Behavior Tree ---
-    Vector2 mLastKnownPosition;
-    float mTimeSinceLastSeen;
 };
 
 #endif //ENEMY_H

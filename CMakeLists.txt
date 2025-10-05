@@ -70,6 +70,21 @@ add_executable(${PROJECT_NAME}
         Source/Actors/FSM/Chase.h
         Source/Actors/FSM/Attack.cpp
         Source/Actors/FSM/Attack.h
+        Source/Actors/BehaviorTree/BehaviorTreeNode.h
+        Source/Actors/BehaviorTree/BehaviorTree.h
+        Source/Actors/BehaviorTree/BehaviorTree.cpp
+        Source/Actors/BehaviorTree/CompositeNodes.h
+        Source/Actors/BehaviorTree/CompositeNodes.cpp
+        Source/Actors/BehaviorTree/ConditionNodes.h
+        Source/Actors/BehaviorTree/ConditionNodes.cpp
+        Source/Actors/BehaviorTree/ActionNodes.h
+        Source/Actors/BehaviorTree/ActionNodes.cpp
+        Source/Actors/BehaviorTree/EnemyBehaviorTree.h
+        Source/Actors/BehaviorTree/EnemyBehaviorTree.cpp
+        Source/Actors/BehaviorTree/EnemyABehaviorTree.h
+        Source/Actors/BehaviorTree/EnemyABehaviorTree.cpp
+        Source/Actors/BehaviorTree/BehaviorTreeExamples.h
+        Source/Actors/BehaviorTree/BehaviorTreeExamples.cpp
         Source/Actors/Projectile.cpp
         Source/Actors/Projectile.h
         Source/Actors/ProjectileEffect.cpp
