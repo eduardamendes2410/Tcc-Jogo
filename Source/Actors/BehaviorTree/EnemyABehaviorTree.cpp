@@ -41,14 +41,14 @@ std::shared_ptr<BehaviorTree> EnemyABehaviorTree::CreateTacticalBehaviorTree() {
     auto desperateFlee = std::make_shared<SequenceNode>();
     desperateFlee->AddChild(std::make_shared<IsLowHealthNode>(1.0f));
     desperateFlee->AddChild(std::make_shared<IsPlayerNearNode>(300.0f));
-    desperateFlee->AddChild(std::make_shared<FleeActionNode>(150.0f)); // Foge mais rápido
+    desperateFlee->AddChild(std::make_shared<FleeActionNode>(200.0f)); // Foge MUITO mais rápido
     root->AddChild(desperateFlee);
     
     // Estratégia 2: Fuga preventiva quando moderadamente ferido
     auto preventiveFlee = std::make_shared<SequenceNode>();
     preventiveFlee->AddChild(std::make_shared<IsLowHealthNode>(2.0f));
     preventiveFlee->AddChild(std::make_shared<IsPlayerNearNode>(250.0f));
-    preventiveFlee->AddChild(std::make_shared<FleeActionNode>(120.0f));
+    preventiveFlee->AddChild(std::make_shared<FleeActionNode>(180.0f)); // Foge mais rápido
     root->AddChild(preventiveFlee);
     
     // Estratégia 3: Combate defensivo quando saudável
@@ -108,7 +108,7 @@ std::shared_ptr<BehaviorTree> EnemyABehaviorTree::CreateMultiStrategyBehaviorTre
     // Sub-estratégia: Fuga tática
     auto tacticalFlee = std::make_shared<SequenceNode>();
     tacticalFlee->AddChild(std::make_shared<IsPlayerInAttackRangeNode>(100.0f));
-    tacticalFlee->AddChild(std::make_shared<FleeActionNode>(110.0f));
+    tacticalFlee->AddChild(std::make_shared<FleeActionNode>(190.0f)); // Fuga tática mais rápida
     defensiveStrategy->AddChild(tacticalFlee);
     
     // Sub-estratégia: Ataque à distância
@@ -138,7 +138,7 @@ std::shared_ptr<BehaviorTreeNode> EnemyABehaviorTree::CreateSmartFleeSequence() 
     auto fleeSequence = std::make_shared<SequenceNode>();
     fleeSequence->AddChild(std::make_shared<IsLowHealthNode>(1.5f)); // Foge quando tem 1.5 HP ou menos
     fleeSequence->AddChild(std::make_shared<IsPlayerNearNode>(250.0f)); // Alcance maior de detecção
-    fleeSequence->AddChild(std::make_shared<FleeActionNode>(130.0f)); // Velocidade de fuga otimizada
+    fleeSequence->AddChild(std::make_shared<FleeActionNode>(220.0f)); // Velocidade de fuga MUITO otimizada
     return fleeSequence;
 }
 

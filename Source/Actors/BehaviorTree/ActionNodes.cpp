@@ -126,7 +126,9 @@ FleeActionNode::FleeActionNode(float fleeSpeed) : mFleeSpeed(fleeSpeed) {
 }
 
 void FleeActionNode::OnStart(Enemy* enemy) {
-    enemy->GetDrawComponent()->SetAnimation("run");
+    if (enemy && enemy->GetDrawComponent()) {
+        enemy->GetDrawComponent()->SetAnimation("run");
+    }
 }
 
 NodeResult FleeActionNode::Execute(Enemy* enemy, float deltaTime) {
@@ -140,17 +142,19 @@ NodeResult FleeActionNode::Execute(Enemy* enemy, float deltaTime) {
     Vector2 direction = enemyPos - playerPos; // Direção oposta ao jogador
     direction.Normalize();
     
-    // Vira o sprite para a direção do movimento
+    // Vira o sprite para a direção do movimento (CORRIGIDO)
     if (direction.x > 0.0f) {
-        enemy->SetRotation(0.0f);
+        enemy->SetRotation(0.0f); // Virado para a direita
     } else if (direction.x < 0.0f) {
-        enemy->SetRotation(Math::Pi);
+        enemy->SetRotation(Math::Pi); // Virado para a esquerda (180 graus)
     }
     
-    // Aplica velocidade de fuga
+    // Aplica velocidade de fuga MAIS RÁPIDA usando ApplyForce
     RigidBodyComponent* rb = enemy->GetRigidBody();
     if (rb) {
-        rb->SetVelocity(direction * mFleeSpeed);
+        // Usa ApplyForce para movimento mais fluido e rápido
+        float fleeForce = mFleeSpeed * 2.0f; // Dobra a força de fuga
+        rb->ApplyForce(direction * fleeForce);
     }
     
     return NodeResult::Running;
