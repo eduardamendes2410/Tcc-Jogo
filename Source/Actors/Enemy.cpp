@@ -35,6 +35,12 @@ Enemy::Enemy(Game* game, Punk* punk, int type, AIType aiType)
     ,mMaxHP(3)
    ,mHP(3)
     ,mTimeSinceLastSeen(999.0f)
+    , mTakingDamage(false)
+     , mDamageTimer(0.0f)
+     , mIsShooting(false)
+     , mFireCooldown(0.0f)
+     , mLastKnownPosition(Vector2::Zero)
+
 
 {
     // Configura os componentes, assim como no Punk
@@ -303,7 +309,15 @@ void Enemy::MoveTowardsPlayer()
 
     // Pega a direção para o jogador
     Vector2 direction = punk->GetPosition() - GetPosition();
-    direction.Normalize();
+
+    // Verificação de segurança antes de normalizar
+    if (direction.LengthSq() > 0.001f) {
+        direction.Normalize();
+    } else {
+        // Se estiver exatamente na mesma posição, para o movimento
+        rb->SetVelocity(Vector2::Zero);
+        return;
+    }
 
     // Vira o sprite para a direção do movimento
     if (direction.x > 0.0f) {
@@ -316,6 +330,7 @@ void Enemy::MoveTowardsPlayer()
     float speed = GetVelocidade();
     rb->SetVelocity(direction * speed);
 }
+
 
 
 void Enemy::OnHorizontalCollision(const float minOverlap, AABBColliderComponent* other)

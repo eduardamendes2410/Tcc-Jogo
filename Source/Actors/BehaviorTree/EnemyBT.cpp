@@ -52,8 +52,11 @@ NodeStatus HasPlayerBeenSeenRecently::Tick() {
 // --- IMPLEMENTAÇÃO DAS AÇÕES ---
 
 NodeStatus AttackPlayer::Tick() {
+    if (!mOwner || !mOwner->GetDrawComponent()) return NodeStatus::Failure;
+
     mOwner->GetDrawComponent()->SetAnimation("attack");
-    mOwner->MoveTowardsPlayer(); // Continua se movendo enquanto ataca
+    mOwner->MoveTowardsPlayer();
+
     if(mOwner->GetPunk()) {
         mOwner->ShootAtPlayer(mOwner->GetPunk()->GetPosition(), mOwner->GetPunk()->GetComponent<AABBColliderComponent>());
     }
@@ -61,10 +64,13 @@ NodeStatus AttackPlayer::Tick() {
 }
 
 NodeStatus ChasePlayer::Tick() {
+    if (!mOwner || !mOwner->GetDrawComponent()) return NodeStatus::Failure;
+
     mOwner->GetDrawComponent()->SetAnimation("run");
     mOwner->MoveTowardsPlayer();
     return NodeStatus::Success;
 }
+
 
 NodeStatus Flee::Tick() {
     if(!mOwner->GetPunk()) return NodeStatus::Failure;
@@ -72,7 +78,14 @@ NodeStatus Flee::Tick() {
     mOwner->GetDrawComponent()->SetAnimation("run");
 
     Vector2 fleeDirection = mOwner->GetPosition() - mOwner->GetPunk()->GetPosition();
-    fleeDirection.Normalize();
+    // Verificação de segurança antes de normalizar
+        if (fleeDirection.LengthSq() > 0.001f) {
+            fleeDirection.Normalize();
+        } else {
+            // Se estiver na mesma posição, escolhe uma direção padrão
+            fleeDirection = Vector2(1.0f, 0.0f);
+        }
+
 
     RigidBodyComponent* rb = mOwner->GetRigidBody();
     if (rb) {
@@ -89,7 +102,13 @@ NodeStatus SearchForPlayer::Tick() {
 
     if (Vector2::Distance(currentPos, targetPos) > 20.0f) {
         Vector2 direction = targetPos - currentPos;
-        direction.Normalize();
+        // Verificação de segurança antes de normalizar
+                if (direction.LengthSq() > 0.001f) {
+                    direction.Normalize();
+                } else {
+                    return NodeStatus::Success; // Já está no destino
+                }
+
 
         RigidBodyComponent* rb = mOwner->GetRigidBody();
         if (rb) {
