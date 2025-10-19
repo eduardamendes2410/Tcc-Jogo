@@ -3,10 +3,11 @@
 #include "../../Game.h"
 #include <SDL.h>
 
-DrawRectangleComponent::DrawRectangleComponent(Actor* owner, Vector2 size, Vector3 color, int drawOrder)
+DrawRectangleComponent::DrawRectangleComponent(Actor* owner, Vector2 size, Vector3 color, int type, int drawOrder)
     : DrawComponent(owner, drawOrder)
     , mSize(size)
     , mColor(color)
+    , mType (type)
 {}
 
 void DrawRectangleComponent::SetSize(const Vector2& size)
@@ -39,7 +40,8 @@ void DrawRectangleComponent::Draw(SDL_Renderer* renderer, const Vector3& modColo
     SDL_RenderFillRect(renderer, &rect);
 
     // Tamanho fixo total da barra
-    const int borderWidth = 50;
+    int borderWidth = 50;
+    if (mType == 2) borderWidth = 70;
     const int borderHeight = 6;
 
     // Define a posição da borda na mesma posição do retângulo preenchido

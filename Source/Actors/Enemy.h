@@ -40,9 +40,13 @@ public:
     int GetHP() const { return mHP; }
     float GetFireCooldown() const { return mFireCooldown; }
     void SetFireCooldown(float cooldown) { mFireCooldown = cooldown; }
+    void IncrementHP(float hp) { mHP = mHP + hp; }
+    void SetHP(float hp) { mHP = hp; }
+
+    void SetIsHealing(bool healing) { mIsHealing = healing; }
 
 private:
-    // Ponteiros para os componentes, igual ao Punk
+    // Ponteiros para os componentes, igual ao PunkSAAA
     RigidBodyComponent* mRigidBodyComponent;
     AABBColliderComponent* mColliderComponent;
     DrawAnimatedComponent* mDrawComponent;
@@ -58,7 +62,7 @@ private:
     float mVelocidade;
     bool mIsDying;
     float mDeathTimer;
-    int mHP = 3;
+    float mHP = 8.0f;
     bool mTakingDamage = false;
     float mDamageTimer = 0.0f;
     int mType;
@@ -69,6 +73,7 @@ private:
     DrawRectangleComponent* mDrawHudBackground;
     DrawRectangleComponent* mDrawHudLife;
     int mMaxHP;
+    bool mIsHealing = false;
 
 };
 

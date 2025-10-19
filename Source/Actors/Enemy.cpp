@@ -30,8 +30,8 @@ Enemy::Enemy(Game* game, Punk* punk, int type)
     , mIsDying(false)
     , mDeathTimer(0.0f)
     , mType(type)
-    , mMaxHP(3)
-    , mHP(3)
+    , mMaxHP(8)
+    , mHP(8.0f)
     , mIsShooting(false)
     , mFireCooldown(0.0f)
 
@@ -72,6 +72,10 @@ Enemy::Enemy(Game* game, Punk* punk, int type)
         mDrawComponent->SetAnimation("run");
         mDrawComponent->SetAnimFPS(10.0f);
         mDrawComponent->SetPivot(Vector2(0.5f, 0.5f));
+
+        if (mType == 2) {
+            mHP = 10.0f;
+        }
     }
 
     mHudBase = new Actor(mGame);
@@ -79,20 +83,23 @@ Enemy::Enemy(Game* game, Punk* punk, int type)
     float barHeight = 6.0f;
 
     // Barra vermelha (vida cheia no início)
-    mDrawHudLife = new DrawRectangleComponent(mHudBase, Vector2(barWidth, barHeight), Vector3(1.0f, 0.0f, 0.0f), 201);
-
+    mDrawHudLife = new DrawRectangleComponent(mHudBase, Vector2(barWidth, barHeight), Vector3(1.0f, 0.0f, 0.0f), mType,201);
 
     // --- INICIALIZAÇÃO BASEADA NO TIPO DE INIMIGO ---
     if (mType == 0) {
         // Inimigo A: Usa Behavior Tree inteligente e complexa
-        mBehaviorTree = EnemyABehaviorTree::CreateMultiStrategyBehaviorTree();
-        // Inicializa FSM como fallback (não será usada)
-        mEstadoAtual = std::make_unique<Patrol>();
-    } else {
+        mBehaviorTree = EnemyABehaviorTree::CreateSimpleFleeBehaviorTree();
+    }
+
+    if (mType == 1) {
         // Inimigo B: Usa FSM tradicional
         mEstadoAtual = std::make_unique<Patrol>();
         // Behavior Tree não é criada para economizar memória
         mBehaviorTree = nullptr;
+    }
+
+    else {
+        mEstadoAtual = std::make_unique<Patrol>();
     }
 
 }
@@ -113,7 +120,7 @@ void Enemy::OnUpdate(float deltaTime)
         {
             mTakingDamage = false;
 
-            if (mHP <= 0)
+            if (mHP <= 0.0f)
             {
                 Kill();
             }
@@ -140,7 +147,7 @@ void Enemy::OnUpdate(float deltaTime)
     if (mType == 0) {
         // Inimigo A: Usa Behavior Tree
         if (mBehaviorTree && mPunk) {
-            mBehaviorTree->Update(this, deltaTime);
+                mBehaviorTree->Update(this, deltaTime);
         }
     } else {
         // Inimigo B: Usa FSM tradicional
@@ -157,9 +164,16 @@ void Enemy::OnUpdate(float deltaTime)
 
         if (mDrawHudLife)
         {
-            float hpPercent = static_cast<float>(mHP) / 3.0f;
-            float fullWidth = 50.0f;
-            mDrawHudLife->SetSize(Vector2(fullWidth * hpPercent, 6.0f));
+            if (mType == 2) {
+                float hpPercent = static_cast<float>(mHP) / 10.0f;
+                float fullWidth = 70.0f;
+                mDrawHudLife->SetSize(Vector2(fullWidth * hpPercent, 6.0f));
+            }
+            else {
+                float hpPercent = static_cast<float>(mHP) / 8.0f;
+                float fullWidth = 50.0f;
+                mDrawHudLife->SetSize(Vector2(fullWidth * hpPercent, 6.0f));
+            }
         }
     }
 }

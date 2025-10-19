@@ -18,12 +18,26 @@ NodeResult SelectorNode::Execute(Enemy* enemy, float deltaTime) {
 
 // SequenceNode Implementation
 NodeResult SequenceNode::Execute(Enemy* enemy, float deltaTime) {
-    for (auto& child : mChildren) {
-        NodeResult result = child->Execute(enemy, deltaTime);
-        if (result == NodeResult::Failure || result == NodeResult::Running) {
-            return result;
+    for (size_t i = mRunningChildIndex; i < mChildren.size(); ++i) {
+        NodeResult result = mChildren[i]->Execute(enemy, deltaTime);
+
+        if (result == NodeResult::Failure) {
+            // Se falhar, reseta o estado e retorna Failure.
+            mRunningChildIndex = 0;
+            return NodeResult::Failure;
         }
+
+        if (result == NodeResult::Running) {
+            // Se estiver rodando, salva o índice e retorna Running.
+            mRunningChildIndex = i;
+            return NodeResult::Running;
+        }
+
+        // Se o resultado for Success, o loop continua para o próximo filho (i++)
     }
+
+    // Se todos os filhos tiveram sucesso, reseta o estado e retorna Success.
+    mRunningChildIndex = 0;
     return NodeResult::Success;
 }
 

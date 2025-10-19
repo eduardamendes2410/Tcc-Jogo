@@ -9,6 +9,8 @@
 #include "../../Components/DrawComponents/DrawAnimatedComponent.h"
 #include "../../Math.h"
 
+float MAX_HEALTH = 8.0f;
+
 // PatrolActionNode Implementation
 PatrolActionNode::PatrolActionNode(float patrolDistance) 
     : mPatrolDistance(patrolDistance), mCurrentDirection(1), mInitialized(false) {
@@ -36,7 +38,7 @@ NodeResult PatrolActionNode::Execute(Enemy* enemy, float deltaTime) {
     // Verifica se atingiu os limites e inverte a direção
     if (mCurrentDirection == 1 && currentPos.x >= rightBoundary) {
         mCurrentDirection = -1;
-        enemy->SetRotation(Math::Pi);
+        enemy->SetRotation(Math::Pi); //vira pro outro lado
     }
     else if (mCurrentDirection == -1 && currentPos.x <= leftBoundary) {
         mCurrentDirection = 1;
@@ -60,6 +62,8 @@ void PatrolActionNode::OnEnd(Enemy* enemy) {
     }
 }
 
+// ------------------------------------------------------------------------------------------------------------
+
 // ChaseActionNode Implementation
 void ChaseActionNode::OnStart(Enemy* enemy) {
     enemy->GetDrawComponent()->SetAnimation("run");
@@ -69,7 +73,7 @@ NodeResult ChaseActionNode::Execute(Enemy* enemy, float deltaTime) {
     if (!enemy || !enemy->GetPunk()) {
         return NodeResult::Failure;
     }
-    
+    //quando retorna sucess?
     enemy->MoveTowardsPlayer();
     return NodeResult::Running;
 }
@@ -80,6 +84,8 @@ void ChaseActionNode::OnEnd(Enemy* enemy) {
         rb->SetVelocity(Vector2::Zero);
     }
 }
+
+// ------------------------------------------------------------------------------------------------------------
 
 // AttackActionNode Implementation
 AttackActionNode::AttackActionNode(float attackDuration) 
@@ -121,7 +127,11 @@ void AttackActionNode::OnEnd(Enemy* enemy) {
     mAttacking = false;
 }
 
-// FleeActionNode Implementation
+// cRIAR UM ATAQUE QUE ELE VAI ATIRAR MAIS VEZES OU MAIS RAPIDO E SAIR CORRENDO
+
+// ------------------------------------------------------------------------------------------------------------
+
+// FleeActionNode Implementation - FUGA
 FleeActionNode::FleeActionNode(float fleeSpeed) : mFleeSpeed(fleeSpeed) {
 }
 
@@ -140,6 +150,17 @@ NodeResult FleeActionNode::Execute(Enemy* enemy, float deltaTime) {
     Vector2 enemyPos = enemy->GetPosition();
     Vector2 playerPos = enemy->GetPunk()->GetPosition();
     Vector2 direction = enemyPos - playerPos; // Direção oposta ao jogador
+    float distance = direction.Length();
+
+    RigidBodyComponent* rb = enemy->GetRigidBody();
+    if (!rb) return NodeResult::Failure;
+
+    // Se já estiver longe o bastante, cura e finaliza
+    if (distance > 300.0f) {
+        rb->SetVelocity(Vector2(0.0f, 0.0f));
+        return NodeResult::Success;
+    }
+
     direction.Normalize();
     
     // Vira o sprite para a direção do movimento (CORRIGIDO)
@@ -148,13 +169,14 @@ NodeResult FleeActionNode::Execute(Enemy* enemy, float deltaTime) {
     } else if (direction.x < 0.0f) {
         enemy->SetRotation(Math::Pi); // Virado para a esquerda (180 graus)
     }
-    
+
     // Aplica velocidade de fuga MAIS RÁPIDA usando ApplyForce
-    RigidBodyComponent* rb = enemy->GetRigidBody();
     if (rb) {
         // Usa ApplyForce para movimento mais fluido e rápido
         float fleeForce = mFleeSpeed * 2.0f; // Dobra a força de fuga
         rb->ApplyForce(direction * fleeForce);
+        SDL_Log("velocity: (%.2f, %.2f)", rb->GetVelocity().x, rb->GetVelocity().y);
+        SDL_Log("direction: (%.2f, %.2f), fleeForce: %.2f", direction.x, direction.y, fleeForce);
     }
     
     return NodeResult::Running;
@@ -166,6 +188,8 @@ void FleeActionNode::OnEnd(Enemy* enemy) {
         rb->SetVelocity(Vector2::Zero);
     }
 }
+// ------------------------------------------------------------------------------------------------------------
+
 
 // IdleActionNode Implementation
 void IdleActionNode::OnStart(Enemy* enemy) {
@@ -181,3 +205,51 @@ NodeResult IdleActionNode::Execute(Enemy* enemy, float deltaTime) {
     
     return NodeResult::Running;
 }
+
+// ------------------------------------------------------------------------------------------------------------
+
+// Nó de ação: Recupera vida gradualmente
+NodeResult HealOverTimeNode::Execute(Enemy* enemy, float deltaTime) {
+    NodeResult result = NodeResult::Running;
+
+    if (!enemy) {
+        result = NodeResult::Failure;
+        SDL_Log("HealOverTimeNode result %d", result);
+        return result;
+    }
+
+    // Verifica distância até o jogador
+    if (enemy->GetPunk()) {
+        Vector2 enemyPos = enemy->GetPosition();
+        Vector2 playerPos = enemy->GetPunk()->GetPosition();
+        Vector2 diff = playerPos - enemyPos;
+        float distance = diff.Length();
+
+        // Se o jogador estiver muito perto, interrompe a cura
+        if (distance < 80.0f) {
+            SDL_Log("Jogador se aproximou! Interrompendo cura (distância: %f)", distance);
+            return NodeResult::Failure;
+        }
+    }
+
+    static float healTimer = 0.0f;
+    healTimer += deltaTime;
+
+    if (healTimer >= 0.2f) {
+        healTimer = 0.0f;
+        if (enemy->GetHP() < MAX_HEALTH) {
+            enemy->IncrementHP(mHealRate);
+            SDL_Log("Curando... HP: %f", enemy->GetHP());
+        }
+    }
+
+    // Continua até HP igual a 6 para nao ficar impossivel
+    if (enemy->GetHP() >= 6) {
+        SDL_Log("Cura completa!");
+        result = NodeResult::Success;
+        SDL_Log("HealOverTimeNode result %d", result);
+        return result;
+    }
+        SDL_Log("HealOverTimeNode result %d", result);
+        return result;
+    }

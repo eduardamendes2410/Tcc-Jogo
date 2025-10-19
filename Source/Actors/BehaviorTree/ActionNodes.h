@@ -6,6 +6,7 @@
 #define ACTION_NODES_H
 
 #include "BehaviorTreeNode.h"
+#include "../../Math.h"
 
 // Nó de ação: Patrulha entre dois pontos
 class PatrolActionNode : public BehaviorTreeNode {
@@ -16,9 +17,9 @@ public:
     void OnEnd(Enemy* enemy) override;
 
 private:
-    Vector2 mStartPoint;
-    float mPatrolDistance;
-    int mCurrentDirection;
+    Vector2 mStartPoint; //come~co do ponto
+    float mPatrolDistance; //fim do ponto que ele fica patrulhando
+    int mCurrentDirection; //alternar a direcao
     bool mInitialized;
 };
 
@@ -39,7 +40,7 @@ public:
     void OnEnd(Enemy* enemy) override;
 
 private:
-    float mAttackDuration;
+    float mAttackDuration; //QUANTO TEMPO DURA O ATAQUE
     float mTimer;
     bool mAttacking;
 };
@@ -54,6 +55,8 @@ public:
 
 private:
     float mFleeSpeed;
+    int mHealRate = 1;
+    int mMaxHealth = 8;
 };
 
 // Nó de ação: Fica parado (idle)
@@ -61,6 +64,19 @@ class IdleActionNode : public BehaviorTreeNode {
 public:
     NodeResult Execute(Enemy* enemy, float deltaTime) override;
     void OnStart(Enemy* enemy) override;
+};
+
+// Nó de ação: Recupera vida gradualmente
+class HealOverTimeNode : public BehaviorTreeNode {
+public:
+    HealOverTimeNode(float healRatePerSecond = 0.5f, float maxHealth = 8.0f)
+        : mHealRate(healRatePerSecond), mMaxHealth(maxHealth) {}
+
+    NodeResult Execute(Enemy* enemy, float deltaTime) override;
+
+private:
+    float mHealRate;   // quantidade de vida recuperada por segundo
+    float mMaxHealth;  // vida máxima do inimigo
 };
 
 #endif //ACTION_NODES_H

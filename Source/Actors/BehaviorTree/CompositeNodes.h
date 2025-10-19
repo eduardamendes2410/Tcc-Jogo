@@ -19,6 +19,9 @@ public:
 class SequenceNode : public BehaviorTreeNode {
 public:
     NodeResult Execute(Enemy* enemy, float deltaTime) override;
+
+private:
+    int mRunningChildIndex = 0;
 };
 
 // Nó Parallel: Executa todos os filhos simultaneamente

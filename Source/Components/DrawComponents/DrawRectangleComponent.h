@@ -4,7 +4,7 @@
 class DrawRectangleComponent : public DrawComponent
 {
 public:
-    DrawRectangleComponent(class Actor* owner, Vector2 size, Vector3 color, int drawOrder = 100);
+    DrawRectangleComponent(class Actor* owner, Vector2 size, Vector3 color, int type, int drawOrder = 100);
     void SetSize(const Vector2& size);
     void SetColor(const Vector3& color);
 
@@ -13,4 +13,5 @@ public:
 private:
     Vector2 mSize;
     Vector3 mColor;
+    int mType;
 };
