@@ -79,12 +79,8 @@ add_executable(${PROJECT_NAME}
         Source/Actors/BehaviorTree/ConditionNodes.cpp
         Source/Actors/BehaviorTree/ActionNodes.h
         Source/Actors/BehaviorTree/ActionNodes.cpp
-        Source/Actors/BehaviorTree/EnemyBehaviorTree.h
-        Source/Actors/BehaviorTree/EnemyBehaviorTree.cpp
         Source/Actors/BehaviorTree/EnemyABehaviorTree.h
         Source/Actors/BehaviorTree/EnemyABehaviorTree.cpp
-        Source/Actors/BehaviorTree/BehaviorTreeExamples.h
-        Source/Actors/BehaviorTree/BehaviorTreeExamples.cpp
         Source/Actors/Projectile.cpp
         Source/Actors/Projectile.h
         Source/Actors/ProjectileEffect.cpp
@@ -94,12 +90,12 @@ add_executable(${PROJECT_NAME}
         Source/Actors/Item.h
         Source/Actors/PunkArm.h
         Source/Actors/PunkArm.cpp
-        Source/Actors/Weapon.h
-        Source/Actors/Weapon.cpp
         Source/UIElements/DialogueSystem.cpp
         Source/UIElements/DialogueSystem.h
-        Source/Components/DrawComponents/DrawRectangleComponent.h
         Source/Components/DrawComponents/DrawRectangleComponent.cpp
+        Source/Components/DrawComponents/DrawRectangleComponent.h
+        Source/Actors/Weapon.cpp
+        Source/Actors/Weapon.cpp
 )
 
 # Link libraries using PkgConfig variables
