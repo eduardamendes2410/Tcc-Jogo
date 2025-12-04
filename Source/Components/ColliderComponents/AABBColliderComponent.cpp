@@ -78,7 +78,8 @@ float AABBColliderComponent::DetectHorizontalCollision(RigidBodyComponent *rigid
 
             // Check if the collider is in the same layer or if it should be ignored
             if (ColliderIgnoreMap.at(mLayer)
-                .find(collider->GetLayer()) == ColliderIgnoreMap.at(mLayer).end())
+                .find(collider->GetLayer()) == ColliderIgnoreMap.at(mLayer).end()
+                && mTemporarilyIgnoredLayers.find(collider->GetLayer()) == mTemporarilyIgnoredLayers.end())
             {
                 ResolveHorizontalCollisions(rigidBody, overlap);
             }

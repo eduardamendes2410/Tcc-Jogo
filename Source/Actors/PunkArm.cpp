@@ -3,7 +3,7 @@
 PunkArm::PunkArm(Game *game, Punk *punk, const std::function<void(Vector2 &recoilForce)> &onShotCallback)
     : Actor(game), mPunk(punk), mIsShooting(false),
       mPistol(nullptr), mShotgun(nullptr), mChosenWeapon(nullptr),
-      mChangeWeaponCooldown(.5f), mChangeWeaponTimer(.5f)
+      mChangeWeaponCooldown(.2f), mChangeWeaponTimer(.5f)
 {
     mPistol = new Pistol(this);
     mShotgun = new Shotgun(this);

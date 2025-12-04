@@ -79,4 +79,24 @@ private:
     float mMaxHealth;  // vida máxima do inimigo
 };
 
+// Novo nó de ação
+class RepositionBehindLeaderNode : public BehaviorTreeNode {
+public:
+    RepositionBehindLeaderNode(float followDistance);
+protected:
+    NodeResult Execute(Enemy* enemy, float deltaTime) override;
+private:
+    float mFollowDistance;
+};
+
+// Novo nó de condição
+class HasLeaderAndIsWeakNode : public BehaviorTreeNode {
+public:
+    HasLeaderAndIsWeakNode(float healthThreshold);
+protected:
+    NodeResult Execute(Enemy* enemy,  float deltaTime) override;
+private:
+    float mHealthThreshold;
+};
+
 #endif //ACTION_NODES_H

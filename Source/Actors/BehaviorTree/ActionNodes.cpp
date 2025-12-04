@@ -175,8 +175,6 @@ NodeResult FleeActionNode::Execute(Enemy* enemy, float deltaTime) {
         // Usa ApplyForce para movimento mais fluido e rápido
         float fleeForce = mFleeSpeed * 2.0f; // Dobra a força de fuga
         rb->ApplyForce(direction * fleeForce);
-        SDL_Log("velocity: (%.2f, %.2f)", rb->GetVelocity().x, rb->GetVelocity().y);
-        SDL_Log("direction: (%.2f, %.2f), fleeForce: %.2f", direction.x, direction.y, fleeForce);
     }
     
     return NodeResult::Running;
@@ -214,7 +212,7 @@ NodeResult HealOverTimeNode::Execute(Enemy* enemy, float deltaTime) {
 
     if (!enemy) {
         result = NodeResult::Failure;
-        SDL_Log("HealOverTimeNode result %d", result);
+        //SDL_Log("HealOverTimeNode result %d", result);
         return result;
     }
 
@@ -227,7 +225,7 @@ NodeResult HealOverTimeNode::Execute(Enemy* enemy, float deltaTime) {
 
         // Se o jogador estiver muito perto, interrompe a cura
         if (distance < 80.0f) {
-            SDL_Log("Jogador se aproximou! Interrompendo cura (distância: %f)", distance);
+            //SDL_Log("Jogador se aproximou! Interrompendo cura (distância: %f)", distance);
             return NodeResult::Failure;
         }
     }
@@ -239,17 +237,67 @@ NodeResult HealOverTimeNode::Execute(Enemy* enemy, float deltaTime) {
         healTimer = 0.0f;
         if (enemy->GetHP() < MAX_HEALTH) {
             enemy->IncrementHP(mHealRate);
-            SDL_Log("Curando... HP: %f", enemy->GetHP());
         }
     }
 
     // Continua até HP igual a 6 para nao ficar impossivel
     if (enemy->GetHP() >= 6) {
-        SDL_Log("Cura completa!");
         result = NodeResult::Success;
-        SDL_Log("HealOverTimeNode result %d", result);
         return result;
     }
-        SDL_Log("HealOverTimeNode result %d", result);
         return result;
     }
+
+// --- Implementação dos novos nós ---
+
+RepositionBehindLeaderNode::RepositionBehindLeaderNode(float followDistance)
+    : mFollowDistance(followDistance) {}
+
+NodeResult RepositionBehindLeaderNode::Execute(Enemy* enemy, float deltaTime) {
+    Enemy* leader = enemy->GetLeader();
+    Punk* player = enemy->GetPunk();
+
+    if (!leader || !player || leader->GetState() == ActorState::Destroy) {
+        return NodeResult::Failure; // Se não há líder ou jogador, esta ação falha.
+    }
+
+    const float maxLeaderDistance = 600.0f;
+
+    float distanceToLeader = Vector2::Distance(enemy->GetPosition(), leader->GetPosition());
+    if (distanceToLeader > maxLeaderDistance) {
+        // Se o líder estiver muito longe, não segue
+        return NodeResult::Failure;
+    }
+
+    // Calcula a posição "atrás" do líder, longe do jogador
+    Vector2 leaderPos = leader->GetPosition();
+    Vector2 playerPos = player->GetPosition();
+
+    Vector2 directionFromPlayerToLeader = Vector2::Normalize(leaderPos - playerPos);
+    Vector2 targetPos = leaderPos + (directionFromPlayerToLeader * mFollowDistance);
+
+    // Se já está perto o suficiente do ponto, sucesso!
+    if (Vector2::Distance(enemy->GetPosition(), targetPos) < 20.0f) {
+        return NodeResult::Success;
+    }
+
+    // Move em direção ao ponto de recuo
+    Vector2 moveDirection = Vector2::Normalize(targetPos - enemy->GetPosition());
+    enemy->GetRigidBody()->SetVelocity(moveDirection * enemy->GetVelocidade() * 1.2f);
+
+    float angle = Math::Atan2(moveDirection.y, moveDirection.x);
+    enemy->SetRotation(angle);
+
+    return NodeResult::Running;
+}
+
+HasLeaderAndIsWeakNode::HasLeaderAndIsWeakNode(float healthThreshold)
+    : mHealthThreshold(healthThreshold) {}
+
+NodeResult HasLeaderAndIsWeakNode::Execute(Enemy* enemy,  float deltaTime) {
+    if (enemy->GetLeader() && enemy->GetLeader()->GetState() != ActorState::Destroy) {
+        if (enemy->GetHP() <= mHealthThreshold)
+        return NodeResult::Success;
+    }
+    return NodeResult::Failure;
+}

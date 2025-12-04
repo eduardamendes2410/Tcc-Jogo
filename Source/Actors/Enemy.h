@@ -12,6 +12,11 @@
 #include "BehaviorTree/BehaviorTree.h"
 #include "../Components/DrawComponents/DrawRectangleComponent.h"
 
+enum class EnemyRole {
+    Follower,
+    Leader
+};
+
 class Enemy: public Actor {
 public:
     Enemy(Game* game, Punk* player, int type);
@@ -45,6 +50,12 @@ public:
 
     void SetIsHealing(bool healing) { mIsHealing = healing; }
 
+    //enemy elite
+    void SetRole(EnemyRole role) { mRole = role; }
+    void SetLeader(Enemy* leader) { mLeader = leader; }
+    Enemy* GetLeader() { return mLeader; }
+    EnemyRole GetRole() { return mRole; }
+
 private:
     // Ponteiros para os componentes, igual ao PunkSAAA
     RigidBodyComponent* mRigidBodyComponent;
@@ -75,6 +86,9 @@ private:
     int mMaxHP;
     bool mIsHealing = false;
 
+    //enemy elite
+    EnemyRole mRole;
+    Enemy* mLeader;
 };
 
 #endif //ENEMY_H

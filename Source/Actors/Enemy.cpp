@@ -34,6 +34,8 @@ Enemy::Enemy(Game* game, Punk* punk, int type)
     , mHP(8.0f)
     , mIsShooting(false)
     , mFireCooldown(0.0f)
+    , mRole(EnemyRole::Follower) // Inicializa como Follower
+    , mLeader(nullptr)
 
 {
     // Configura os componentes, assim como no Punk
@@ -183,7 +185,14 @@ void Enemy::TakeDamage()
 {
     if (mIsDying || mTakingDamage) return;
 
-    mHP--;
+    //arma do player
+    Punk* punk = GetPunk();
+    if (punk->GetCurrentWeaponName() == "Shotgun" && mHP >= 2.0f) {
+        mHP = mHP - 2.0f;
+    }
+    else {
+        mHP--;
+    }
 
     if (mHP <= 0)
     {
@@ -249,7 +258,7 @@ void Enemy::ShootAtPlayer(Vector2 targetPos, AABBColliderComponent* targetCollid
         Projectile* projectile = new Projectile(mGame, ColliderLayer::EnemyProjectile, 2);
         projectile->SetPosition(firePosition);
         projectile->mPreviousPosition = firePosition;
-        projectile->GetComponent<RigidBodyComponent>()->ApplyForce(direction * 2500.0f);
+        projectile->GetComponent<RigidBodyComponent>()->ApplyForce(direction * 2000.0f);
         mFireCooldown = .9f;
     }
 }

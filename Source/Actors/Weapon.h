@@ -34,12 +34,14 @@ public:
     const float mReloadCooldown; float mReloadCooldownTimer;
     DrawSpriteComponent *mDrawComponent;
     std::string mPunkArmConfig;
+
+    int mDamage = 0;
 };
 
 class Pistol : public Weapon
 {
 public:
-    Pistol(class PunkArm *mArm, int maxAmmo = 5, float fireCooldown = 0.8f, float reloadCooldown = 1.5f);
+    Pistol(class PunkArm *mArm, int maxAmmo = 5, float fireCooldown = 0.8f, float reloadCooldown = 0.1f); //reloadCooldown carrega mais rapido
     Vector2 ShotOffset() override;
     Vector2 Shoot(Vector2 &target) override;
 };

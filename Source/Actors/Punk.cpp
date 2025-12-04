@@ -33,6 +33,7 @@ Punk::Punk(Game *game, const float forwardSpeed, const float jumpSpeed)
     mDrawComponent->AddAnimation("dash", {18, 19, 20, 21, 22, 23});
 
     mDrawComponent->SetAnimation("idle");
+
     mDrawComponent->SetAnimFPS(13.0f);
 
     mArm = new PunkArm(mGame, this, [this](Vector2 &recoilDir)
@@ -54,6 +55,18 @@ void Punk::OnProcessInput(const uint8_t *state)
 
     if (mArm->mIsShooting)
         return;
+
+    Vector2 moveDir = Vector2::Zero;
+
+    if (state[SDL_SCANCODE_W]) moveDir.y -= 1;
+    if (state[SDL_SCANCODE_S]) moveDir.y += 1;
+    if (state[SDL_SCANCODE_A]) moveDir.x -= 1;
+    if (state[SDL_SCANCODE_D]) moveDir.x += 1;
+
+    if (moveDir.LengthSq() > 0) {
+        moveDir.Normalize();
+        mLastMoveDir = moveDir;
+    }
 
     if (state[SDL_SCANCODE_D])
     {
@@ -84,6 +97,10 @@ void Punk::OnProcessInput(const uint8_t *state)
     {
         if (mArm->mFoundShotgun == false) return;
         mArm->ChangeWeapon();
+    }
+
+    if (state[SDL_SCANCODE_SPACE]) {
+        StartDash();
     }
 }
 
@@ -171,6 +188,22 @@ void Punk::OnUpdate(float deltaTime)
 
     if (mInvincibilityTimer > 0.0f)
         mInvincibilityTimer -= deltaTime;
+
+    if (mIsDashing)
+    {
+        mDashTimer -= deltaTime;
+        if (mDashTimer <= 0.0f)
+        {
+            mIsDashing = false;
+            mColliderComponent->ClearTemporaryIgnores(); // <--- volta a colidir com inimigos
+            mRigidBodyComponent->SetVelocity(Vector2::Zero);
+            mDashCooldownTimer = mDashCooldown;
+        }
+    }
+
+    // controle do cooldown
+    if (mDashCooldownTimer > 0.0f)
+        mDashCooldownTimer -= deltaTime;
 }
 
 void Punk::ManageAnimations()
@@ -182,6 +215,9 @@ void Punk::ManageAnimations()
     else if (mArm->mIsShooting)
     {
         mDrawComponent->SetAnimation(mArm->ArmConfig());
+    }
+    else if (mIsDashing) {
+        mDrawComponent->SetAnimation("dash");
     }
     else if (mIsRunning)
     {
@@ -245,18 +281,18 @@ void Punk::OnHorizontalCollision(const float minOverlap, AABBColliderComponent *
         return;
     }
 
-    if (other->GetLayer() == ColliderLayer::Portal && mGame->GetGameScene() == Game::GameScene::Level1) {
-        mGame->SetGameScene(Game::GameScene::Level2, .25f);
+    if (other->GetLayer() == ColliderLayer::Portal && mGame->GetGameScene() == Game::GameScene::Level2) {
+        mGame->SetGameScene(Game::GameScene::Level1, .25f);
         other->SetEnabled(false);
         return;
     }
 
-    if (other->GetLayer() == ColliderLayer::Portal && mGame->GetGameScene() == Game::GameScene::Level2) {
+    if (other->GetLayer() == ColliderLayer::Portal && mGame->GetGameScene() == Game::GameScene::Level1) {
         mGame->SetGameScene(Game::GameScene::Ending_GoHome, .25f);
         other->SetEnabled(false);
         return;
     }
-    if (other->GetLayer() == ColliderLayer::Portal2 && mGame->GetGameScene() == Game::GameScene::Level2) {
+    if (other->GetLayer() == ColliderLayer::Portal2 && mGame->GetGameScene() == Game::GameScene::Level1) {
         mGame->SetGameScene(Game::GameScene::Ending_Stay, .25f);
         other->SetEnabled(false);
         return;
@@ -270,6 +306,7 @@ void Punk::OnHorizontalCollision(const float minOverlap, AABBColliderComponent *
 
 void Punk::OnVerticalCollision(const float minOverlap, AABBColliderComponent *other)
 {
+
     if (other->GetLayer() == ColliderLayer::Enemy)
     {
         TakeDamage();
@@ -283,18 +320,18 @@ void Punk::OnVerticalCollision(const float minOverlap, AABBColliderComponent *ot
         return;
     }
 
-    if (other->GetLayer() == ColliderLayer::Portal && mGame->GetGameScene() == Game::GameScene::Level1) {
-        mGame->SetGameScene(Game::GameScene::Level2, .25f);
+    if (other->GetLayer() == ColliderLayer::Portal && mGame->GetGameScene() == Game::GameScene::Level2) {
+        mGame->SetGameScene(Game::GameScene::Level1, .25f);
         other->SetEnabled(false);
         return;
     }
 
-    if (other->GetLayer() == ColliderLayer::Portal && mGame->GetGameScene() == Game::GameScene::Level2) {
+    if (other->GetLayer() == ColliderLayer::Portal && mGame->GetGameScene() == Game::GameScene::Level1) {
         mGame->SetGameScene(Game::GameScene::Ending_GoHome, .25f);
         other->SetEnabled(false);
         return;
     }
-    if (other->GetLayer() == ColliderLayer::Portal2 && mGame->GetGameScene() == Game::GameScene::Level2) {
+    if (other->GetLayer() == ColliderLayer::Portal2 && mGame->GetGameScene() == Game::GameScene::Level1) {
         mGame->SetGameScene(Game::GameScene::Ending_Stay, .25f);
         other->SetEnabled(false);
         return;
@@ -311,7 +348,7 @@ void Punk::FindKey()
     mFoundKey = true;
     mGame->GetAudio()->PlaySound("KeyPick.wav");
 
-    if (mGame->GetGameScene() == Game::GameScene::Level1) {
+    if (mGame->GetGameScene() == Game::GameScene::Level2) {
         DialogueSystem::Get()->StartDialogue(
         {
             "Punk: Uma chave! Agora, o que sera que ela abre?",
@@ -322,7 +359,7 @@ void Punk::FindKey()
     }
     );
         const auto &portal = new Portal(mGame);
-        portal->SetPosition(Vector2(622.0f, 210.0f));
+        portal->SetPosition(Vector2(365.0f, 980.0f));
     }
     else {
         DialogueSystem::Get()->StartDialogue(
@@ -338,12 +375,11 @@ void Punk::FindKey()
     }
     );
         const auto &portal = new Portal(mGame);
-        portal->SetPosition(Vector2(288.0f, 992.0f));
+        portal->SetPosition(Vector2(592.0f, 235.0f));
 
         const auto &portal2 = new Portal(mGame, 1);
-        portal2->SetPosition(Vector2(416.0f, 970.0f));
+        portal2->SetPosition(Vector2(681.0f, 211.0f));
     }
-
 }
 
 void Punk::FindHeart() {
@@ -384,3 +420,22 @@ std::string Punk::GetCurrentWeaponName()
 
     return "Unknown";
 }
+
+void Punk::StartDash()
+{
+    if (mIsDashing || mDashCooldownTimer > 0.0f) return;
+
+    mIsDashing = true;
+    mDrawComponent->SetAnimation("dash");
+    mDrawComponent->SetAnimFPS(13.0f);
+
+    mDashTimer = mDashDuration;
+    mDashCooldownTimer = 0.6f;        // tempo entre dashes
+    mColliderComponent->SetEnabled(true); // desativa colisão
+    mColliderComponent->IgnoreLayerTemporarily(ColliderLayer::Enemy); // <--- ignora inimigos
+    mColliderComponent->IgnoreLayerTemporarily(ColliderLayer::EnemyProjectile);
+
+    Vector2 dashDir = mLastMoveDir;
+    mRigidBodyComponent->SetVelocity(dashDir * mDashSpeed);
+}
+

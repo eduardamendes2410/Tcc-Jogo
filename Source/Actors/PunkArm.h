@@ -35,7 +35,8 @@ public:
 private:
     class Punk *mPunk;
     class Weapon *mChosenWeapon;
-    class Pistol *mPistol; class Shotgun *mShotgun;
+    class Pistol *mPistol;
+    class Shotgun *mShotgun;
     std::function<void(Vector2 &recoilForce)> mOnShotCallback;
 
     SoundHandle mDryBulletSoundHandle;

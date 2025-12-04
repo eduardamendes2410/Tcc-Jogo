@@ -44,7 +44,7 @@ Game::Game(int windowWidth, int windowHeight)
       mWindowWidth(windowWidth), mWindowHeight(windowHeight), mPunk(nullptr), mHUD(nullptr), mBackgroundColor(0, 0, 0),
       mModColor(255, 255, 255), mCameraPos(Vector2::Zero), mAudio(nullptr), mGameTimer(0.0f), mGameTimeLimit(0),
       mSceneManagerTimer(0.0f), mSceneManagerState(SceneManagerState::None), mGameScene(GameScene::MainMenu),
-      mNextScene(GameScene::Level1), mBackgroundTexture(nullptr), mBackgroundSize(Vector2::Zero),
+      mNextScene(GameScene::Level2), mBackgroundTexture(nullptr), mBackgroundSize(Vector2::Zero),
       mBackgroundPosition(Vector2::Zero) {
 }
 
@@ -186,20 +186,17 @@ void Game::ChangeScene() {
 
         // const auto &portal = new Portal(this);
         // portal->SetPosition(Vector2(622.0f, 210.0f));
+
         DialogueSystem::Get()->StartDialogue(
             {
-                // Um vetor com as falas
-                "Punk: Ugh... Minha cabeca... Onde estou?",
-                "Punk: A ultima coisa que lembro... foi de um clarao.",
-                "Punk: Tenho que sair desta floresta. E descobrir o que esta acontecendo."
-
+                "Punk: Oque? Parece que agora estou em uma dimensao totalmente diferente",
+                "Punk: Sera que este e o ETER? Como o mestre havia me falado?"
             },
             [this]() {
-                // Esta função será chamada quando o diálogo terminar
-                // Retorna o estado do jogo para "Playing" para que a fase comece.
                 SetGamePlayState(GamePlayState::Playing);
             }
         );
+
         const auto &key = new Item(
             this,
             "../Assets/Levels/map_2/blocks/dungeon_3/021.png",
@@ -223,7 +220,7 @@ void Game::ChangeScene() {
             10, 10,
             39,10.5f
         );
-        shotGun->SetPosition(Vector2(640.0f, 864.0f));
+        shotGun->SetPosition(Vector2(1200.0f, 864.0f));
 
         const auto &heart2 = new Item(
             this,
@@ -264,14 +261,19 @@ void Game::ChangeScene() {
         key->SetPosition(Vector2(160.0f, 192.0f));
 
         DialogueSystem::Get()->StartDialogue(
-            {
-                "Punk: Oque? Parece que agora estou em uma dimensao totalmente diferente",
-                "Punk: Sera que este e o ETER? Como o mestre havia me falado?"
-            },
-            [this]() {
-                SetGamePlayState(GamePlayState::Playing);
-            }
-        );
+    {
+        // Um vetor com as falas
+        "Punk: Ugh... Minha cabeca... Onde estou?",
+        "Punk: A ultima coisa que lembro... foi de um clarao.",
+        "Punk: Tenho que sair deste lugar. E descobrir o que esta acontecendo."
+
+    },
+    [this]() {
+        // Esta função será chamada quando o diálogo terminar
+        // Retorna o estado do jogo para "Playing" para que a fase comece.
+        SetGamePlayState(GamePlayState::Playing);
+    }
+);
         const auto &heart1 = new Item(
             this,
             "../Assets/Sprites/Itens/07.png",
@@ -337,7 +339,7 @@ void Game::LoadMainMenu() {
     const Vector2 button3Pos = Vector2(mWindowWidth / 4.0f * 3 - buttonSize.x / 2.0f,
                                        button2Pos.y + buttonSize.y + 5.0f);
 
-    mainMenu->AddButton(" ", button1Pos, buttonSize, [this]() { SetGameScene(GameScene::Level1); });
+    mainMenu->AddButton(" ", button1Pos, buttonSize, [this]() { SetGameScene(GameScene::Level2); });
     mainMenu->AddText("Play", button1Pos + Vector2(buttonSize.x / 2 - CHAR_WIDTH * 2, buttonSize.y / 3),
                       Vector2(CHAR_WIDTH * 4, WORD_HEIGHT), 40, 1024, Color::White);
     mainMenu->AddImage("../Assets/Sprites/Menu/button.png", button1Pos, buttonSize);

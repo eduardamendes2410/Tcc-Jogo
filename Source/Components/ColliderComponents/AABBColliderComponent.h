@@ -9,6 +9,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <unordered_set>
 
 enum class ColliderLayer
 {
@@ -57,6 +58,13 @@ public:
     void SetOffset(const Vector2& offset) { mOffset = offset; }
     ColliderLayer GetLayer() const { return mLayer; }
 
+    void SetEnabled(bool enabled) { mIsEnabled = enabled; }
+    bool IsEnabled() const { return mIsEnabled; }
+
+    //Function for dash to ignore enemies
+    void IgnoreLayerTemporarily(ColliderLayer layer){mTemporarilyIgnoredLayers.insert(layer);}
+    void ClearTemporaryIgnores(){mTemporarilyIgnoredLayers.clear();}
+
 private:
     float GetMinVerticalOverlap(AABBColliderComponent* b) const;
     float GetMinHorizontalOverlap(AABBColliderComponent* b) const;
@@ -70,4 +78,7 @@ private:
     bool mIsStatic;
 
     ColliderLayer mLayer;
+
+    bool mIsEnabled = true;
+    std::unordered_set<ColliderLayer> mTemporarilyIgnoredLayers;
 };

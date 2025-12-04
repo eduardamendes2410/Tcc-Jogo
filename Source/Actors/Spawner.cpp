@@ -34,12 +34,22 @@ void Spawner::OnUpdate(float deltaTime)
             };
 
             int groupNumber = 0;
+
             for (const auto& center : groupCenters)
             {
+                // Primeiro, cria o inimigo líder
+                auto leader = new Enemy(mGame, const_cast<Punk*>(punk), 2);
+                leader->SetRole(EnemyRole::Leader);
+                Vector2 leaderPos = center + Vector2(0.0f, -50.0f); // mais à frente
+                leader->SetPosition(leaderPos);
+                leader->Start();
+
                 // 1 inimigo por grupo
                 if(groupNumber == 2 || groupNumber == 3) {
                     Vector2 offset = Vector2(-30.0f, 0.0f);
-                    auto enemy = new Enemy(mGame, const_cast<Punk*>(punk), 0, AIType::BehaviorTree);
+                    auto enemy = new Enemy(mGame, const_cast<Punk*>(punk), 0);
+                    enemy->SetRole(EnemyRole::Follower);
+                    enemy->SetLeader(leader);
                     Vector2 spawnPos = center + offset;
                     enemy->SetPosition(spawnPos);
                     enemy->Start();
@@ -54,7 +64,9 @@ void Spawner::OnUpdate(float deltaTime)
                             case 1: offset = Vector2(0.0f, 0.0f); break;
                         }
 
-                        auto enemy = new Enemy(mGame, const_cast<Punk*>(punk), 0, AIType::BehaviorTree);
+                        auto enemy = new Enemy(mGame, const_cast<Punk*>(punk), 0);
+                        enemy->SetRole(EnemyRole::Follower);
+                        enemy->SetLeader(leader);
                         Vector2 spawnPos = center + offset;
                         enemy->SetPosition(spawnPos);
                         enemy->Start();
@@ -67,12 +79,14 @@ void Spawner::OnUpdate(float deltaTime)
                     {
                         Vector2 offset;
                         switch (i) {
-                            case 0: offset = Vector2(-30.0f, 0.0f); break;
+                            case 0: offset = Vector2(-80.0f, 0.0f); break;
                             case 1: offset = Vector2(0.0f, 0.0f); break;
-                            case 2: offset = Vector2(30.0f, 0.0f); break;
+                            case 2: offset = Vector2(80.0f, 0.0f); break;
                         }
 
-                        auto enemy = new Enemy(mGame, const_cast<Punk*>(punk), 0, AIType::BehaviorTree);
+                        auto enemy = new Enemy(mGame, const_cast<Punk*>(punk), 0);
+                        enemy->SetRole(EnemyRole::Follower);
+                        enemy->SetLeader(leader);
                         Vector2 spawnPos = center + offset;
                         enemy->SetPosition(spawnPos);
                         enemy->Start();
@@ -82,6 +96,7 @@ void Spawner::OnUpdate(float deltaTime)
                 groupNumber++;
             }
         }
+
         else {
             int enemyNumber2 = Math::RandRangeInt(2, 4);
 
@@ -103,7 +118,7 @@ void Spawner::OnUpdate(float deltaTime)
                         case 2: offset = Vector2(40.0f, 20.0f);   break;
                     }
 
-                    auto enemy = new Enemy(mGame, const_cast<Punk*>(punk), 1, AIType::BehaviorTree);
+                    auto enemy = new Enemy(mGame, const_cast<Punk*>(punk), 1);
                     Vector2 spawnPos = center + offset;
                     enemy->SetPosition(spawnPos);
                     enemy->Start();

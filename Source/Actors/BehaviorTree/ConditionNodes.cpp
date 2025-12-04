@@ -49,10 +49,8 @@ IsLowHealthNode::IsLowHealthNode(float healthThreshold)
 }
 
 NodeResult IsLowHealthNode::Execute(Enemy* enemy, float deltaTime) {
-    SDL_Log("IsLowHealthNode::Execute()");
     int currentHP = enemy->GetHP();
     NodeResult result =  (currentHP <= mHealthThreshold) ? NodeResult::Success : NodeResult::Failure;
-    SDL_Log("IsLowHealthNode result = %d", result);
     return result;
 
 }

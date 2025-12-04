@@ -41,6 +41,9 @@ public:
 
     std::string GetCurrentWeaponName();
 
+    void StartDash();
+    bool GetCollisionEnabled() {return mCollisionEnabled;}
+
 private:
     static const int POLE_SLIDE_TIME = 1; // Time in seconds to slide down the pole
 
@@ -54,7 +57,7 @@ private:
     bool mIsDying; float mDeathTimer;
     bool mFoundKey;
 
-    int mLives = 6;
+    int mLives = 5;
     float mInvincibilityTimer = 0.0f;
 
     class RigidBodyComponent* mRigidBodyComponent;
@@ -65,4 +68,15 @@ private:
 
     void MaintainInbound();
     void TakeDamage();
+
+    bool mIsDashing = false;
+    float mDashDuration = 0.2f;     // duração do dash (em segundos)
+    float mDashTimer = 0.0f;        // controla o tempo de dash
+    float mDashSpeed = 1200.0f;     // velocidade do dash
+    bool mCollisionEnabled = true;  // controla colisões
+
+    float mDashCooldown = 0.5f;      // tempo entre dashes
+    float mDashCooldownTimer = 0.0f;  // controla o tempo restante
+
+    Vector2 mLastMoveDir = Vector2(1.0f, 0.0f);
 };

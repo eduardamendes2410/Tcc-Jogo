@@ -129,11 +129,11 @@ Vector2 Shotgun::Shoot(Vector2 &target)
     Vector2 fireDir = target - startPos;
     fireDir.Normalize();
 
-    for (int i = -1; i <= 1; ++i) {
+    for (int i = -2; i <= 2; ++i) {
         Projectile *projectile = new Projectile(mArm->GetPunk()->GetGame(), ColliderLayer::PlayerProjectile);
         projectile->SetPosition(startPos);
         projectile->mPreviousPosition = startPos;
-        projectile->GetComponent<RigidBodyComponent>()->ApplyForce(fireDir * Matrix2::CreateRotation(i * Math::Pi/6.0f) * 1800.0f);
+        projectile->GetComponent<RigidBodyComponent>()->ApplyForce(fireDir * Matrix2::CreateRotation(i * Math::Pi/30.0f) * 1800.0f);
     }
 
     mAmmo--;
