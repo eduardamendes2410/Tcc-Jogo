@@ -12,7 +12,6 @@
 #include "Punk.h"
 #include "../Components/RigidBodyComponent.h"
 #include "FSM/State.h"
-#include "BehaviorTree/EnemyBehaviorTree.h"
 #include "BehaviorTree/EnemyABehaviorTree.h"
 #include "../Components/DrawComponents/DrawAnimatedComponent.h"
 #include "../Components/ColliderComponents/AABBColliderComponent.h"

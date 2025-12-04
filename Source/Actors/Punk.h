@@ -57,7 +57,7 @@ private:
     bool mIsDying; float mDeathTimer;
     bool mFoundKey;
 
-    int mLives = 5;
+    int mLives = 6;
     float mInvincibilityTimer = 0.0f;
 
     class RigidBodyComponent* mRigidBodyComponent;
